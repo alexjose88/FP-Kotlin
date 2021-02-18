@@ -2,7 +2,7 @@ package demo.hof
 
 fun main() {
     println(
-        fibonacci(20)
+        fibonacci(2)
     )
 
 }
