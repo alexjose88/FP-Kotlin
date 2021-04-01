@@ -1,10 +1,15 @@
 package demo.hof
 
 fun main() {
-    val list = listOf(1, 2, 3, 4)
+    val list1 = listOf(1, 2, 3, 4)
+    val list2 = listOf(4,2,5,6)
 
     println(
-        isSorted(list) { a, b -> a <= b }
+        isSorted(list1) { a, b -> a <= b }
+    )
+
+    println(
+        isSorted(list2) { a, b -> a <= b }
     )
 
 }
