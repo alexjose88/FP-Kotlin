@@ -106,6 +106,70 @@ fun main() {
             List.of(1, 2, 3)
         )
     )
+
+    println("-------")
+    println("AppendTailRec")
+    println(
+        List.appendFoldRight(
+            List.of(1, 2, 3),
+            List.of(4, 5, 6)
+        )
+    )
+
+    println("-------")
+    println("Concat")
+    println(
+        List.concat(
+            List.of(
+                List.of(1, 2, 3),
+                List.of(4, 5, 6)
+            )
+        )
+    )
+
+    println("-------")
+    println("plusOne")
+    println(
+        List.plusOne(
+            List.of(1, 2, 3)
+        )
+    )
+
+    println("-------")
+    println("map")
+    println(
+        List.map(List.of(1, 2, 3)) { a -> a.toString() + "letter" }
+    )
+
+    println("-------")
+    println("filter")
+    println(
+        List.filter2(List.of(1, 2, 3)) { a -> a == 2 || a == 3 }
+    )
+
+    println("-------")
+    println("flatMap")
+    println(
+        List.flatMap(List.of(1, 2, 3)) { a -> List.of(a, a) }
+    )
+
+    println("-------")
+    println("sumLists")
+    println(
+        List.sumLists(
+            List.of(1,2,3),
+            List.of(2,3,4)
+        )
+    )
+
+    println("-------")
+    println("zipWith")
+    println(
+        List.zipWith(
+            List.of(1,2,3),
+            List.of(2,3,4)
+        ){a, b -> a + b}
+    )
 }
 
 
@@ -224,6 +288,58 @@ sealed class List<out A> {
         fun <A> length(l: List<A>): Int =
             foldRight(l, 0, { _, acc -> 1 + acc })
 
+        fun <A> appendFoldRight(a1: List<A>, a2: List<A>): List<A> =
+            foldRight(a1, a2, { a, b -> Cons(a, b) })
+
+        fun <A> concat(l: List<List<A>>): List<A> =
+            foldRight(
+                l = l,
+                z = List.empty(),
+                f = { a, b -> foldRight(a, b, { f, g -> Cons(f, g) }) }
+            )
+
+        fun <A> concat2(l: List<List<A>>): List<A> =
+            foldRight(
+                l = l,
+                z = List.empty(),
+                f = { a, b -> append(a, b) }
+            )
+
+        fun plusOne(xs: List<Int>): List<Int> =
+            foldRight(xs, empty(), { a, b -> Cons(a + 1, b) })
+
+
+        fun <A, B> map(xs: List<A>, f: (A) -> B): List<B> =
+            foldRightL(xs, empty(), { a, b -> Cons(f(a), b) })
+
+        fun <A> filter(xs: List<A>, f: (A) -> Boolean): List<A> =
+            foldRightL(xs, empty(), { a, b -> if (f(a)) Cons(a, b) else b })
+
+        fun <A> filter2(xs: List<A>, f: (A) -> Boolean): List<A> =
+            flatMap(xs) { a -> if (f(a)) of(a) else empty() }
+
+
+        fun <A, B> flatMap(xa: List<A>, f: (A) -> List<B>): List<B> =
+            foldRightL(xa, empty(), {a, acc -> append(f(a), acc)})
+
+        fun sumLists(a1: List<Int>, a2: List<Int>): List<Int> =
+            when (a1) {
+                is Nil -> Nil
+                is Cons -> when(a2) {
+                    is Nil -> Nil
+                    is Cons -> Cons( a1.head + a2.head, sumLists(a1.tail, a2.tail))
+                }
+            }
+
+        fun <A>zipWith(a1: List<A>, a2: List<A>, f: (A, A) -> A): List<A> =
+            when (a1) {
+                is Nil -> Nil
+                is Cons -> when(a2) {
+                    is Nil -> Nil
+                    is Cons -> Cons(f(a1.head, a2.head), zipWith(a1.tail, a2.tail, f))
+                }
+            }
+
 
         private fun <A, B> foldRight(l: List<A>, z: B, f: (A, B) -> (B)): B =
             when (l) {
@@ -231,8 +347,17 @@ sealed class List<out A> {
                 is Cons -> f(l.head, foldRight(l.tail, z, f))
             }
 
-        private fun <A, B> foldRightRefactored(l: List<A>, acc: B, f: (A, B) -> (B)): B = TODO()
+        private fun <A, B> foldRightL(l: List<A>, z: B, f: (A, B) -> (B)): B =
+            foldLeft(
+                xs = l,
+                acc = { b: B -> b },
+                f = { g, a ->
+                    { b ->
+                        g(f(a, b))
+                    }
 
+                }
+            )(z)
 
         fun sumTailRec(xs: List<Int>): Int =
             foldLeft(xs, 0, { b, a -> b + a })
